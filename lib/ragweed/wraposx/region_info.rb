@@ -26,9 +26,9 @@ module Ragweed::Wraposx::Vm
   #define VM_REGION_BASIC_INFO_COUNT ((mach_msg_type_number_t) (sizeof(vm_region_basic_info_data_t)/sizeof(int)))
   #define VM_REGION_EXTENDED_INFO_COUNT   ((mach_msg_type_number_t) (sizeof(vm_region_extended_info_data_t)/sizeof(int)))
   #define VM_REGION_TOP_INFO_COUNT ((mach_msg_type_number_t) (sizeof(vm_region_top_info_data_t)/sizeof(int)))
-  FLAVORS = { REGION_BASIC_INFO => {:size => 30, :count => 9},
-      REGION_EXTENDED_INFO => {:size => 32, :count => 9},
-      REGION_TOP_INFO => {:size => 17,:count => 9}
+  FLAVORS = { REGION_BASIC_INFO => {:size => 30, :count => 8},
+      REGION_EXTENDED_INFO => {:size => 32, :count => 8},
+      REGION_TOP_INFO => {:size => 17,:count => 5}
   }
 
   module Pflags
@@ -242,7 +242,7 @@ module Ragweed::Wraposx
       address = ([address].pack("L_")).to_ptr
       objn = ([0].pack("I_")).to_ptr
       sz = ("\x00"*SIZEOFINT).to_ptr
-      r = CALLS["libc!vm_region:IPPIPPP=I"].call(task, address, sz, Vm::FLAVORS[flavor][:count], info, count, objn).first
+      r = CALLS["libc!vm_region:IPPIPPP=I"].call(task, address, sz, flavor, info, count, objn).first
       raise KernelCallError.new(:vm_region, r) if r != 0
       return "#{info.to_s(Vm::FLAVORS[flavor][:size])}#{address.to_s(SIZEOFLONG)}#{sz.to_s(SIZEOFINT)}"
     end

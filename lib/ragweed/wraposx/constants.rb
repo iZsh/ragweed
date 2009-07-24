@@ -85,6 +85,17 @@ module Ragweed::Wraposx::Vm::Prot
   ALL = 0x7 #all permissions
 end
 
+module Ragweed::Wraposx::Vm::Sm
+  # share_mode
+  SM_COW = 0x1
+  SM_PRIVATE = 0x2
+  SM_EMPTY = 0x3
+  SM_SHARED = 0x4
+  SM_TRUESHARED = 0x5
+  SM_PRIVATE_ALIASED = 0x6
+  SM_SHARED_ALIASED = 0x7
+end
+
 module Ragweed::Wraposx::Dl
   RTLD_LAZY = 0x1
   RTLD_NOW = 0x2
