@@ -1,5 +1,5 @@
 Ragweed
-    by tduehr, struct, and tqbf
+    by tduehr, struct, tqbf and iZsh
     http://matasano.com/log
 
 == DESCRIPTION:
@@ -28,7 +28,7 @@ The most complete set is for Win32.
 == INSTALL:
 
   gem sources -a http://gems.github.com
-  sudo gem install tduehr-ragweed
+  sudo gem install izsh-ragweed
 
 == LICENSE:
 

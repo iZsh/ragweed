@@ -96,6 +96,7 @@ class Ragweed::Wraposx::RegionInfo
     offset:           #{self.offset.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.offset)}
     behavior:         #{self.behavior.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.behavior)}
     user_wired_count: #{self.user_wired_count.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.user_wired_count)}
+    address:          #{self.address.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.address)}
     size:             #{self.size.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.size)}
 EOM
   end
@@ -113,6 +114,7 @@ class Ragweed::Wraposx::RegionBasicInfo < Ragweed::Wraposx::RegionInfo
               [:offset, "L"],           # The region's offset into the memory object. The region begins at this offset. 
               [:behavior, "i"],         # Expected reference pattern for the memory.
               [:user_wired_count, "S"],
+              [:address, "L"],          # The returned address
               [:size, "I"]              # size of memory region returned
               ]).each {|x| attr_accessor x[0]}
 
@@ -131,6 +133,7 @@ class Ragweed::Wraposx::RegionBasicInfo < Ragweed::Wraposx::RegionInfo
     offset:           #{self.offset.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.offset)}
     behavior:         #{self.behavior.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.behavior)}
     user_wired_count: #{self.user_wired_count.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.user_wired_count)}
+    address:          #{self.address.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.address)}
     size:             #{self.size.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.size)}
 EOM
   end
@@ -153,6 +156,7 @@ class Ragweed::Wraposx::RegionExtendedInfo < Ragweed::Wraposx::RegionInfo
               [:shadow_depth, "S"],
               [:external_pager, "C"],
               [:share_mode, "C"],
+              [:address, "L"],
               [:size, "I"] ]).each {|x| attr_accessor x[0]}
 
   def dump(&block)
@@ -172,6 +176,7 @@ class Ragweed::Wraposx::RegionExtendedInfo < Ragweed::Wraposx::RegionInfo
     shadow_depth:             #{self.shadow_depth.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.shadow_depth)}
     external_pager:           #{self.external_pager.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.external_pager)}
     share_mode:               #{self.share_mode.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.share_mode)}
+    address:                  #{self.address.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.address)}
     size:                     #{self.size.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.size)}
 EOM
   end
@@ -190,6 +195,7 @@ class Ragweed::Wraposx::RegionTopInfo < Ragweed::Wraposx::RegionInfo
               [:private_pages_resident, "I"],
               [:shared_pages_resident, "I"],
               [:share_mode, "C"],
+              [:address, "L"],
               [:size, "I"]]).each {|x| attr_accessor x[0]}
 
   def dump(&block)
@@ -204,6 +210,7 @@ class Ragweed::Wraposx::RegionTopInfo < Ragweed::Wraposx::RegionInfo
     private_pages_resident: #{self.private_pages_resident.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.private_pages_resident)}
     shared_pages_resident:  #{self.shared_pages_resident.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.shared_pages_resident)}
     share_mode:             #{self.share_mode.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.share_mode)}
+    address:                #{self.address.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.address)}
     size:                   #{self.size.to_s(16).rjust(8, "0")} #{maybe_hex.call(self.size)}
 EOM
   end
@@ -232,12 +239,12 @@ module Ragweed::Wraposx
     def vm_region_raw(task, address, flavor)
       info = ("\x00"*64).to_ptr
       count = ([Vm::FLAVORS[flavor][:count]].pack("I_")).to_ptr
-      address = ([address].pack("I_")).to_ptr
+      address = ([address].pack("L_")).to_ptr
       objn = ([0].pack("I_")).to_ptr
       sz = ("\x00"*SIZEOFINT).to_ptr
       r = CALLS["libc!vm_region:IPPIPPP=I"].call(task, address, sz, Vm::FLAVORS[flavor][:count], info, count, objn).first
       raise KernelCallError.new(:vm_region, r) if r != 0
-      return "#{info.to_s(Vm::FLAVORS[flavor][:size])}#{sz.to_s(SIZEOFINT)}"
+      return "#{info.to_s(Vm::FLAVORS[flavor][:size])}#{address.to_s(SIZEOFLONG)}#{sz.to_s(SIZEOFINT)}"
     end
   end
 end
